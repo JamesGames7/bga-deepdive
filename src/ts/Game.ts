@@ -1,18 +1,10 @@
-import { PlayerTurn } from "./States/PlayerTurn";
-
 export class Game {
     public bga: Bga<DeepDivePlayer, DeepDiveGamedatas>;
     private gamedatas: DeepDiveGamedatas;
 
-    private playerTurn: PlayerTurn;
-
     constructor(bga: Bga<DeepDivePlayer, DeepDiveGamedatas>) {
         console.log('deepdive constructor');
         this.bga = bga;
-
-        // Declare the State classes
-        this.playerTurn = new PlayerTurn(this, bga);
-        this.bga.states.register('PlayerTurn', this.playerTurn);
 
         // Uncomment the next line to show debug informations about state changes in the console. Remove before going to production!
         // this.bga.states.logger = console.log;
@@ -47,24 +39,7 @@ export class Game {
         // Setting up player boards
         Object.entries(gamedatas.players).forEach(([pId, player]) => {
             const playerId = Number(pId);
-            // example of setting up players boards
-            this.bga.playerPanels.getElement(playerId).insertAdjacentHTML('beforeend', `
-                <span id="energy-player-counter-${playerId}"></span> Energy
-            `);
-            const counter = new ebg.counter();
-            counter.create(`energy-player-counter-${playerId}`, {
-                value: player.energy,
-                playerCounter: 'energy',
-                playerId: playerId,
-            });
-
-            // example of adding a div for each player
-            document.getElementById('player-tables').insertAdjacentHTML('beforeend', `
-                <div id="player-table-${player.id}">
-                    <strong>${player.name}</strong>
-                    <div>Player zone content goes here</div>
-                </div>
-            `);
+            
         });
         
         // TODO: Set up your game interface here, according to "gamedatas"
