@@ -18,10 +18,15 @@ declare(strict_types=1);
 
 namespace Bga\Games\DeepDive;
 
+use Bga\GameFramework\Components\Deck;
 use Bga\Games\DeepDive\States\Temp;
+use Bga\GameFramework\Helpers\Collection;
 
 class Game extends \Bga\GameFramework\Table
 {
+    public Collection $tilesInfo;
+
+    public Deck $tilesDeck;
 
     /**
      * Your global variables labels:
@@ -36,20 +41,170 @@ class Game extends \Bga\GameFramework\Table
     {
         parent::__construct();
 
-        /* example of notification decorator.
-        // automatically complete notification args when needed
-        $this->bga->notify->addDecorator(function(string $message, array $args) {
-            if (isset($args['player_id']) && !isset($args['player_name']) && str_contains($message, '${player_name}')) {
-                $args['player_name'] = $this->getPlayerNameById($args['player_id']);
-            }
-        
-            if (isset($args['card_id']) && !isset($args['card_name']) && str_contains($message, '${card_name}')) {
-                $args['card_name'] = self::$CARD_TYPES[$args['card_id']]['card_name'];
-                $args['i18n'][] = ['card_name'];
-            }
-            
-            return $args;
-        });*/
+        $this->tilesDeck = $this->deckFactory->createDeck('tiles');
+
+        $this->tilesInfo = new Collection([
+            new Tile(1, "green", 2, ["x" => 0, "y" => 0], false, 0),
+            new Tile(1, "green", 2, ["x" => 0, "y" => 0], false, 1),
+            new Tile(1, "green", 2, ["x" => 0, "y" => 0], false, 2),
+            new Tile(1, "yellow", 2, ["x" => 1, "y" => 0], false, 3),
+            new Tile(1, "yellow", 2, ["x" => 1, "y" => 0], false, 4),
+            new Tile(1, "yellow", 2, ["x" => 1, "y" => 0], false, 5),
+            new Tile(2, "yellow", 3, ["x" => 2, "y" => 0], false, 6),
+            new Tile(2, "yellow", 3, ["x" => 2, "y" => 0], false, 7),
+            new Tile(4, "green", 6, ["x" => 3, "y" => 0], false, 8),
+            new Tile(2, "predator", 0, ["x" => 4, "y" => 0], false, 9),
+            new Tile(2, "predator", 0, ["x" => 4, "y" => 0], false, 10),
+            new Tile(2, "predator", 0, ["x" => 4, "y" => 0], false, 11),
+            new Tile(2, "predator", 0, ["x" => 4, "y" => 0], false, 12),
+            new Tile(2, "predator", 0, ["x" => 4, "y" => 0], false, 13),
+            new Tile(2, "predator", 0, ["x" => 4, "y" => 0], false, 14),
+            new Tile(2, "rock", 0, ["x" => 5, "y" => 0], false, 15),
+            new Tile(2, "rock", 0, ["x" => 5, "y" => 0], false, 16),
+            new Tile(2, "rock", 0, ["x" => 5, "y" => 0], false, 17),
+            new Tile(2, "rock", 0, ["x" => 5, "y" => 0], false, 18),
+            new Tile(2, "rock", 0, ["x" => 5, "y" => 0], false, 19),
+            new Tile(2, "pink", 3, ["x" => 6, "y" => 0], true, 20),
+            new Tile(3, "predator", 0, ["x" => 7, "y" => 0], true, 21),
+            new Tile(3, "predator", 0, ["x" => 7, "y" => 0], true, 22),
+            new Tile(2, "green", 2, ["x" => 8, "y" => 0], false, 23),
+            new Tile(2, "green", 2, ["x" => 8, "y" => 0], false, 24),
+            new Tile(4, "green", 5, ["x" => 9, "y" => 0], false, 25),
+            new Tile(1, "pink", 2, ["x" => 0, "y" => 1], false, 26),
+            new Tile(1, "pink", 2, ["x" => 0, "y" => 1], false, 27),
+            new Tile(1, "pink", 2, ["x" => 0, "y" => 1], false, 28),
+            new Tile(2, "green", 3, ["x" => 1, "y" => 1], false, 29),
+            new Tile(2, "green", 3, ["x" => 1, "y" => 1], false, 30),
+            new Tile(2, "pink", 3, ["x" => 2, "y" => 1], false, 31),
+            new Tile(2, "pink", 3, ["x" => 2, "y" => 1], false, 32),
+            new Tile(4, "yellow", 6, ["x" => 3, "y" => 1], false, 33),
+            new Tile(3, "predator", 0, ["x" => 4, "y" => 1], false, 34),
+            new Tile(3, "predator", 0, ["x" => 4, "y" => 1], false, 35),
+            new Tile(3, "predator", 0, ["x" => 4, "y" => 1], false, 36),
+            new Tile(3, "predator", 0, ["x" => 4, "y" => 1], false, 37),
+            new Tile(3, "predator", 0, ["x" => 4, "y" => 1], false, 38),
+            new Tile(3, "predator", 0, ["x" => 4, "y" => 1], false, 39),
+            new Tile(3, "green", 3, ["x" => 6, "y" => 1], true, 40),
+            new Tile(4, "predator", 0, ["x" => 7, "y" => 1], true, 41),
+            new Tile(4, "predator", 0, ["x" => 7, "y" => 1], true, 42),
+            new Tile(2, "yellow", 2, ["x" => 8, "y" => 1], false, 43),
+            new Tile(2, "yellow", 2, ["x" => 8, "y" => 1], false, 44),
+            new Tile(4, "yellow", 5, ["x" => 9, "y" => 1], false, 45),
+            new Tile(3, "green", 4, ["x" => 0, "y" => 2], false, 46),
+            new Tile(3, "green", 4, ["x" => 0, "y" => 2], false, 47),
+            new Tile(3, "yellow", 4, ["x" => 1, "y" => 2], false, 48),
+            new Tile(3, "yellow", 4, ["x" => 1, "y" => 2], false, 49),
+            new Tile(3, "pink", 4, ["x" => 2, "y" => 2], false, 50),
+            new Tile(3, "pink", 4, ["x" => 2, "y" => 2], false, 51),
+            new Tile(4, "pink", 6, ["x" => 3, "y" => 2], false, 52),
+            new Tile(4, "predator", 0, ["x" => 4, "y" => 2], false, 53),
+            new Tile(4, "predator", 0, ["x" => 4, "y" => 2], false, 54),
+            new Tile(4, "predator", 0, ["x" => 4, "y" => 2], false, 55),
+            new Tile(4, "predator", 0, ["x" => 4, "y" => 2], false, 56),
+            new Tile(4, "predator", 0, ["x" => 4, "y" => 2], false, 57),
+            new Tile(4, "predator", 0, ["x" => 4, "y" => 2], false, 58),
+            new Tile(3, "yellow", 3, ["x" => 6, "y" => 2], true, 59),
+            new Tile(5, "predator", 0, ["x" => 7, "y" => 2], true, 60),
+            new Tile(5, "predator", 0, ["x" => 7, "y" => 2], true, 61),
+            new Tile(5, "predator", 0, ["x" => 7, "y" => 2], true, 62),
+            new Tile(2, "pink", 2, ["x" => 8, "y" => 2], false, 63),
+            new Tile(2, "pink", 2, ["x" => 8, "y" => 2], false, 64),
+            new Tile(4, "pink", 5, ["x" => 9, "y" => 2], false, 65),
+            new Tile(5, "green", 9, ["x" => 0, "y" => 3], false, 66),
+            new Tile(5, "yellow", 9, ["x" => 1, "y" => 3], false, 67),
+            new Tile(5, "pink", 9, ["x" => 2, "y" => 3], false, 68),
+            new Tile(1, "predator", 0, ["x" => 3, "y" => 3], false, 69),
+            new Tile(1, "predator", 0, ["x" => 3, "y" => 3], false, 70),
+            new Tile(1, "predator", 0, ["x" => 3, "y" => 3], false, 71),
+            new Tile(1, "predator", 0, ["x" => 3, "y" => 3], false, 72),
+            new Tile(1, "predator", 0, ["x" => 3, "y" => 3], false, 73),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 74),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 75),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 76),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 77),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 78),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 79),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 80),
+            new Tile(5, "predator", 0, ["x" => 4, "y" => 3], false, 81),
+            new Tile(3, "pink", 3, ["x" => 6, "y" => 3], true, 82),
+            new Tile(1, "bubbles", 0, ["x" => 7, "y" => 3], true, 83),
+            new Tile(1, "bubbles", 0, ["x" => 7, "y" => 3], true, 84),
+            new Tile(2, "green", 4, ["x" => 8, "y" => 3], false, 85),
+            new Tile(4, "green", 7, ["x" => 9, "y" => 3], false, 86),
+            new Tile(1, "bubbles", 0, ["x" => 0, "y" => 4], false, 87),
+            new Tile(1, "bubbles", 0, ["x" => 0, "y" => 4], false, 88),
+            new Tile(1, "bubbles", 0, ["x" => 0, "y" => 4], false, 89),
+            new Tile(1, "bubbles", 0, ["x" => 0, "y" => 4], false, 90),
+            new Tile(2, "bubbles", 0, ["x" => 1, "y" => 4], false, 91),
+            new Tile(2, "bubbles", 0, ["x" => 1, "y" => 4], false, 92),
+            new Tile(2, "bubbles", 0, ["x" => 1, "y" => 4], false, 93),
+            new Tile(3, "bubbles", 0, ["x" => 2, "y" => 4], false, 94),
+            new Tile(3, "bubbles", 0, ["x" => 2, "y" => 4], false, 95),
+            new Tile(3, "bubbles", 0, ["x" => 2, "y" => 4], false, 96),
+            new Tile(3, "bubbles", 0, ["x" => 2, "y" => 4], false, 97),
+            new Tile(4, "bubbles", 0, ["x" => 3, "y" => 4], false, 98),
+            new Tile(4, "bubbles", 0, ["x" => 3, "y" => 4], false, 99),
+            new Tile(1, "rock", 0, ["x" => 4, "y" => 4], false, 100),
+            new Tile(1, "rock", 0, ["x" => 4, "y" => 4], false, 101),
+            new Tile(1, "rock", 0, ["x" => 4, "y" => 4], false, 102),
+            new Tile(1, "rock", 0, ["x" => 4, "y" => 4], false, 103),
+            new Tile(1, "rock", 0, ["x" => 4, "y" => 4], false, 104),
+            new Tile(1, "rock", 0, ["x" => 4, "y" => 4], false, 105),
+            new Tile(4, "green", 6, ["x" => 6, "y" => 4], true, 106),
+            new Tile(2, "bubbles", 0, ["x" => 7, "y" => 4], true, 107),
+            new Tile(2, "yellow", 4, ["x" => 8, "y" => 4], false, 108),
+            new Tile(4, "yellow", 7, ["x" => 9, "y" => 4], false, 109),
+            new Tile(1, "pink", 2, ["x" => 1, "y" => 5], true, 110),
+            new Tile(1, "green", 2, ["x" => 2, "y" => 5], true, 111),
+            new Tile(1, "yellow", 2, ["x" => 3, "y" => 5], true, 112),
+            new Tile(2, "green", 3, ["x" => 4, "y" => 5], true, 113),
+            new Tile(2, "yellow", 3, ["x" => 5, "y" => 5], true, 114),
+            new Tile(4, "yellow", 6, ["x" => 6, "y" => 5], true, 115),
+            new Tile(3, "bubbles", 0, ["x" => 7, "y" => 5], true, 116),
+            new Tile(3, "bubbles", 0, ["x" => 7, "y" => 5], true, 117),
+            new Tile(3, "bubbles", 0, ["x" => 7, "y" => 5], true, 118),
+            new Tile(2, "pink", 4, ["x" => 8, "y" => 5], false, 119),
+            new Tile(4, "pink", 7, ["x" => 9, "y" => 5], false, 120),
+            new Tile(4, "pink", 6, ["x" => 0, "y" => 6], true, 121),
+            new Tile(5, "green", 9, ["x" => 1, "y" => 6], true, 122),
+            new Tile(5, "yellow", 9, ["x" => 2, "y" => 6], true, 123),
+            new Tile(5, "pink", 9, ["x" => 3, "y" => 6], true, 124),
+            new Tile(1, "predator", 0, ["x" => 5, "y" => 6], true, 125),
+            new Tile(2, "predator", 0, ["x" => 6, "y" => 6], true, 126),
+            new Tile(2, "predator", 0, ["x" => 6, "y" => 6], true, 127),
+            new Tile(4, "bubbles", 0, ["x" => 7, "y" => 6], true, 128),
+            new Tile(2, "green", 4, ["x" => 8, "y" => 6], true, 129),
+            new Tile(5, "green", 8, ["x" => 9, "y" => 6], false, 130),
+            new Tile(1, "rock", 0, ["x" => 0, "y" => 7], true, 131),
+            new Tile(1, "rock", 0, ["x" => 0, "y" => 7], true, 132),
+            new Tile(2, "rock", 0, ["x" => 1, "y" => 7], true, 133),
+            new Tile(2, "rock", 0, ["x" => 1, "y" => 7], true, 134),
+            new Tile(1, "green", 1, ["x" => 2, "y" => 7], false, 135),
+            new Tile(1, "green", 1, ["x" => 2, "y" => 7], false, 136),
+            new Tile(1, "green", 1, ["x" => 2, "y" => 7], false, 137),
+            new Tile(1, "yellow", 1, ["x" => 3, "y" => 7], false, 138),
+            new Tile(1, "yellow", 1, ["x" => 3, "y" => 7], false, 139),
+            new Tile(1, "yellow", 1, ["x" => 3, "y" => 7], false, 140),
+            new Tile(1, "pink", 1, ["x" => 4, "y" => 7], false, 141),
+            new Tile(1, "pink", 1, ["x" => 4, "y" => 7], false, 142),
+            new Tile(1, "pink", 1, ["x" => 4, "y" => 7], false, 143),
+            new Tile(1, "green", 1, ["x" => 5, "y" => 7], true, 144),
+            new Tile(1, "yellow", 1, ["x" => 6, "y" => 7], true, 145),
+            new Tile(1, "pink", 1, ["x" => 7, "y" => 7], true, 146),
+            new Tile(2, "yellow", 4, ["x" => 8, "y" => 7], true, 147),
+            new Tile(5, "yellow", 8, ["x" => 9, "y" => 7], false, 148),
+            new Tile(2, "pink", 4, ["x" => 0, "y" => 8], true, 149),
+            new Tile(3, "green", 3, ["x" => 1, "y" => 8], false, 150),
+            new Tile(3, "yellow", 3, ["x" => 2, "y" => 8], false, 151),
+            new Tile(3, "pink", 3, ["x" => 3, "y" => 8], false, 152),
+            new Tile(3, "green", 5, ["x" => 4, "y" => 8], false, 153),
+            new Tile(3, "yellow", 5, ["x" => 5, "y" => 8], false, 154),
+            new Tile(3, "pink", 5, ["x" => 6, "y" => 8], false, 155),
+            new Tile(5, "pink", 8, ["x" => 9, "y" => 8], false, 156),
+            new Tile(5, "green", 10, ["x" => 0, "y" => 9], false, 157),
+            new Tile(5, "yellow", 10, ["x" => 1, "y" => 9], false, 158),
+            new Tile(5, "pink", 10, ["x" => 2, "y" => 9], false, 159),
+        ]);
     }
 
     /**
@@ -119,6 +274,19 @@ class Game extends \Bga\GameFramework\Table
 
         // TODO: Gather all information about current game situation (visible by player $currentPlayerId).
 
+        $result["decks"] = [intval($this->tilesDeck->countCardsInLocation('depth1Deck')), 
+                            intval($this->tilesDeck->countCardsInLocation('depth2Deck')), 
+                            intval($this->tilesDeck->countCardsInLocation('depth3Deck')), 
+                            intval($this->tilesDeck->countCardsInLocation('depth4Deck')),
+                            intval($this->tilesDeck->countCardsInLocation('depth5Deck'))];
+
+        foreach ($this->loadPlayersBasicInfos() as $id => $info) {
+            $result["players"][$id]["meeples"] = [$this->getUniqueValueFromDB("SELECT `meeple1` FROM `player` WHERE `player_id` = $id"),
+                                                $this->getUniqueValueFromDB("SELECT `meeple2` FROM `player` WHERE `player_id` = $id"),
+                                                $this->getUniqueValueFromDB("SELECT `meeple3` FROM `player` WHERE `player_id` = $id")];
+
+        }
+
         return $result;
     }
 
@@ -169,6 +337,19 @@ class Game extends \Bga\GameFramework\Table
 
         // TODO: Setup the initial game situation here.
 
+        $tempInfo = $this->tilesInfo;
+        
+        if ($this->getPlayerCount() < 4) {
+            $tempInfo = $tempInfo->filter(fn($tile) => !$tile->highPlayerCount);
+        }
+
+        $tempInfo = $tempInfo->map(fn($tile) => ["type" => $tile->type, "type_arg" => $tile->id, "nbr" => 1, "location" => $tile->depth]);
+
+        for ($i = 1; $i <= 5; $i++) {
+            $this->tilesDeck->createCards($tempInfo->filter(fn($tile) => $tile["location"] == $i)->values(), 'depth' . $i . 'Deck');
+            $this->tilesDeck->shuffle('depth' . $i . 'Deck');
+        }
+
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
 
@@ -200,4 +381,27 @@ class Game extends \Bga\GameFramework\Table
         $this->cards->moveCard($card['id'], 'hand', $playerId);
     }
     */
+}
+
+class Tile {
+    public int $depth;
+    public string $type;
+    public int $points;
+    public array $coords;
+    public bool $highPlayerCount;
+    public int $id;
+
+    public function __construct(int $depth, string $type, int $points, array $coords, bool $playerCount, int $id)
+    {
+        $this->depth = $depth;
+        $this->points = $points;
+        $this->type = $type;
+        $this->coords = $coords;
+        $this->highPlayerCount = $playerCount;
+        $this->id = $id;
+    }
+
+    public function getInfo() {
+        return ["depth" => $this->depth, "type" => $this->type, "points" => $this->points, "coords" => $this->coords, "id" => $this->id];
+    }
 }

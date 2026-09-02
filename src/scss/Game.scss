@@ -31,13 +31,44 @@
         thing easily.
         
         
-     Note: on the production platform, this file will be compressed and comments will be removed.
-           Consequently, don't hesitate to put as many comments as necessary.
+    Note: on the production platform, this file will be compressed and comments will be removed.
+        Consequently, don't hesitate to put as many comments as necessary.
 */
 
 
 /********* You can start writing your SCSS below this line: **********/
 
+.depth, .playerTable {
+    display: flex;
+    gap: 10px;
+}
 
+.tile-front, .tile-back {
+    background-image: url('img/tiles.webp');
+    background-size: 1000% 1000%;
+}
 
+.meepleHand {
+    display: flex;
+    flex-direction: column;
+}
 
+.meeple {
+    width: 120px;
+    aspect-ratio: 1;
+
+    background-image: url('img/meeples.webp');
+    background-size: 600% 300%;
+
+    @for $i from 0 through 2 {
+        &.meeple-#{$i} {
+            background-position-y: calc(-100% * $i);
+        }
+    }
+
+    @for $i from 0 through 5 {
+        &.playerColour-#{$i} {
+            background-position-x: calc(-100% * $i);
+        }
+    }
+}

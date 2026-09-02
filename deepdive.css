@@ -31,7 +31,57 @@
         thing easily.
 
 
-     Note: on the production platform, this file will be compressed and comments will be removed.
-           Consequently, don't hesitate to put as many comments as necessary.
+    Note: on the production platform, this file will be compressed and comments will be removed.
+        Consequently, don't hesitate to put as many comments as necessary.
 */
 /********* You can start writing your SCSS below this line: **********/
+.depth, .playerTable {
+  display: flex;
+  gap: 10px;
+}
+
+.tile-front, .tile-back {
+  background-image: url("img/tiles.webp");
+  background-size: 1000% 1000%;
+}
+
+.meepleHand {
+  display: flex;
+  flex-direction: column;
+}
+
+.meeple {
+  width: 120px;
+  aspect-ratio: 1;
+  background-image: url("img/meeples.webp");
+  background-size: 600% 300%;
+}
+.meeple.meeple-0 {
+  background-position-y: 0%;
+}
+.meeple.meeple-1 {
+  background-position-y: -100%;
+}
+.meeple.meeple-2 {
+  background-position-y: -200%;
+}
+.meeple.playerColour-0 {
+  background-position-x: 0%;
+}
+.meeple.playerColour-1 {
+  background-position-x: -100%;
+}
+.meeple.playerColour-2 {
+  background-position-x: -200%;
+}
+.meeple.playerColour-3 {
+  background-position-x: -300%;
+}
+.meeple.playerColour-4 {
+  background-position-x: -400%;
+}
+.meeple.playerColour-5 {
+  background-position-x: -500%;
+}
+
+/*# sourceMappingURL=deepdive.css.map */
