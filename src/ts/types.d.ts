@@ -11,7 +11,7 @@ interface DeepDiveGamedatas extends Gamedatas<DeepDivePlayer> {
  * Describe here the types for your state args
  */
 interface PlayerTurnArgs {
-
+    depth: number;
 }
 
 interface Tile {

@@ -18,17 +18,9 @@
 
 -- Example 1: create a standard "card" table to be used with the "Deck" tools (see example game "hearts"):
 
-CREATE TABLE IF NOT EXISTS `tiles` (
-    `card_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `card_type` VARCHAR(16) NOT NULL,
-    `card_type_arg` INT NOT NULL,
-    `card_location` VARCHAR(16) NOT NULL,
-    `card_location_arg` INT NOT NULL,
-    PRIMARY KEY (`card_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 AUTO_INCREMENT=1;
-
 
 -- Example 2: add a custom field to the standard "player" table
 ALTER TABLE `player` ADD `meeple1` VARCHAR(16) NOT NULL DEFAULT 'hand';
 ALTER TABLE `player` ADD `meeple2` VARCHAR(16) NOT NULL DEFAULT 'hand';
 ALTER TABLE `player` ADD `meeple3` VARCHAR(16) NOT NULL DEFAULT 'hand';
+ALTER TABLE `player` ADD `depth` INT NOT NULL DEFAULT 0;

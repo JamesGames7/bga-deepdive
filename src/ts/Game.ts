@@ -1,18 +1,24 @@
 import { BgaCards, BgaAnimations } from "./libs";
+import { PlayerTurn } from "./States/PlayerTurn";
 
 export class Game {
     public bga: Bga<DeepDivePlayer, DeepDiveGamedatas>;
     private gamedatas: DeepDiveGamedatas;
 
-    private animationManager: InstanceType<typeof BgaAnimations.Manager>;
-    private tileManager: InstanceType<typeof BgaCards.Manager<Tile>>;
-    private depthStocks: [InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>];
-    private revealedStocks: [InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>];
-    private gridStocks: InstanceType<typeof BgaCards.GridStock<Tile>>[] = [];
+    public animationManager: InstanceType<typeof BgaAnimations.Manager>;
+    public tileManager: InstanceType<typeof BgaCards.Manager<Tile>>;
+    public depthStocks: [InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>];
+    public revealedStocks: [InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>];
+    public gridStocks: InstanceType<typeof BgaCards.GridStock<Tile>>[] = [];
+
+    private playerTurn: PlayerTurn
 
     constructor(bga: Bga<DeepDivePlayer, DeepDiveGamedatas>) {
         console.log('deepdive constructor');
         this.bga = bga;
+
+        this.playerTurn = new PlayerTurn(this, bga);
+        this.bga.states.register('PlayerTurn', this.playerTurn);
 
         // Uncomment the next line to show debug informations about state changes in the console. Remove before going to production!
         // this.bga.states.logger = console.log;
@@ -92,9 +98,42 @@ export class Game {
                 },
             }))
 
+            temp[i - 1].onSelectionChange = (selection: Tile[], lastChange: Tile) => {
+                if (selection.length > 0) {
+                    this.depthStocks.forEach(s => {
+                        if (this.tileManager.getCardStock(lastChange) != s) {
+                            s.unselectAll()
+                        }
+                    })
+                    this.revealedStocks.forEach(s => {
+                        s.unselectAll()
+                    });
+
+                    ($('confirm') as any).disabled = false
+                } else {
+                    ($('confirm') as any).disabled = true
+                }
+            }
+
             tempRevealed.push(new BgaCards.LineStock(this.tileManager, $(`revealed${i}`), {
                 
             }))
+
+            tempRevealed[i - 1].onSelectionChange = (selection: Tile[], lastChange: Tile) => {
+                if (selection.length > 0) {
+                    this.depthStocks.forEach(s => {
+                        s.unselectAll()
+                    })
+                    this.revealedStocks.forEach(s => {
+                        if (this.tileManager.getCardStock(lastChange) != s) {
+                            s.unselectAll()
+                        }
+                    });
+                    ($('confirm') as any).disabled = false
+                } else {
+                    ($('confirm') as any).disabled = true
+                }
+            }
         }
 
         this.depthStocks = temp as any
@@ -131,7 +170,6 @@ export class Game {
             for (let i = 0; i < 3; i++) {
                 switch (meeples[i]) {
                     case "hand":
-                        console.log($(`meepleHand-${playerId}`))
                         $(`meepleHand-${playerId}`).insertAdjacentHTML(`beforeend`, `
                             <div id="meeple-${playerId}-${i}" class="meeple playerColour-${colourIndex} meeple-${i}"></div>
                         `)
@@ -179,6 +217,10 @@ export class Game {
         this.bga.notifications.setupPromiseNotifications({
             // logger: console.log
         });
+    }
+
+    async notif_test(args) {
+        console.log(args)
     }
     
     // TODO: from this point and below, you can write your game notifications handling methods
