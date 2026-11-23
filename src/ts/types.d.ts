@@ -1,5 +1,6 @@
 interface DeepDivePlayer extends Player {
     meeples: [Tile|null, Tile|null, Tile|null]
+    hand: Tile[]
 }
 
 interface DeepDiveGamedatas extends Gamedatas<DeepDivePlayer> {

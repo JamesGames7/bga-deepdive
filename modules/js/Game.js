@@ -29,7 +29,7 @@ class PlayerTurn {
             this.game.depthStocks[args.depth].setSelectionMode("single");
             this.game.revealedStocks[args.depth].setSelectionMode("single");
             this.bga.statusBar.addActionButton(_('Confirm'), () => this.bga.actions.performAction("actDoAction", {
-                tileId: this.game.depthStocks[args.depth].getSelection().concat(this.game.revealedStocks[args.depth].getSelection())[0].id,
+                tileId: this.game.depthStocks[args.depth].getSelection().concat(this.game.revealedStocks[args.depth].getSelection()).concat([args.prevTile])[0].id,
                 fromDeck: this.game.depthStocks[args.depth].getSelection().length > 0
             }), {
                 disabled: this.game.depthStocks[args.depth].getSelection().length == 0
@@ -53,7 +53,7 @@ class PlayerTurn {
 
 class Game {
     constructor(bga) {
-        this.gridStocks = [];
+        this.handStocks = {};
         console.log('deepdive constructor');
         this.bga = bga;
         this.playerTurn = new PlayerTurn(this, bga);
@@ -142,10 +142,12 @@ class Game {
                     this.revealedStocks.forEach(s => {
                         s.unselectAll();
                     });
-                    $('confirm').disabled = false;
+                    if (this.bga.players.isCurrentPlayerActive())
+                        $('confirm').disabled = false;
                 }
                 else {
-                    $('confirm').disabled = true;
+                    if (this.bga.players.isCurrentPlayerActive())
+                        $('confirm').disabled = true;
                 }
             };
             tempRevealed.push(new BgaCards.LineStock(this.tileManager, $(`revealed${i}`), {
@@ -161,10 +163,12 @@ class Game {
                             s.unselectAll();
                         }
                     });
-                    $('confirm').disabled = false;
+                    if (this.bga.players.isCurrentPlayerActive())
+                        $('confirm').disabled = false;
                 }
                 else {
-                    $('confirm').disabled = true;
+                    if (this.bga.players.isCurrentPlayerActive())
+                        $('confirm').disabled = true;
                 }
             };
         }
@@ -179,20 +183,29 @@ class Game {
             const playerId = Number(pId);
             $('player-tables').insertAdjacentHTML("beforeend", `
                 <div id="playerTable-${playerId}" class="playerTable whiteblock">
-                    <div id="tileGrid-${playerId}"></div>
+                    <div id="tileGreen-${playerId}" class="handStock"></div>
+                    <div id="tileYellow-${playerId}" class="handStock"></div>
+                    <div id="tilePink-${playerId}" class="handStock"></div>
+                    <div id="tileRock-${playerId}" class="handStock"></div>
                     <div id="meepleHand-${playerId}" class="meepleHand"></div>
                 </div>
             `);
-            this.gridStocks.push(new BgaCards.GridStock(this.tileManager, $(`tileGrid-${playerId}`), {
-                maxX: 3,
-                minX: 1,
-                minY: 1,
-                maxY: 1,
-                mapCardToCoordinates(tile) {
-                    let row = ["green", "yellow", "pink"].indexOf(tile.type);
-                    return { x: row, y: 0 };
-                },
-            }));
+            this.handStocks[playerId] = {};
+            this.handStocks[playerId]["green"] = new BgaCards.LineStock(this.tileManager, $(`tileGreen-${playerId}`), {
+                direction: "column"
+            });
+            this.handStocks[playerId]["yellow"] = new BgaCards.LineStock(this.tileManager, $(`tileYellow-${playerId}`), {
+                direction: "column"
+            });
+            this.handStocks[playerId]["pink"] = new BgaCards.LineStock(this.tileManager, $(`tilePink-${playerId}`), {
+                direction: "column"
+            });
+            this.handStocks[playerId]["rock"] = new BgaCards.LineStock(this.tileManager, $(`tileRock-${playerId}`), {
+                direction: "column"
+            });
+            gamedatas.players[playerId].hand.forEach(tile => {
+                this.handStocks[playerId][tile.type].addCard(tile);
+            });
             let meeples = gamedatas.players[playerId].meeples;
             let colour = gamedatas.players[playerId].color;
             let colourIndex = ["492b61", "c1ba31", "94341e", "3283ae", "5d913f", "8d1c59"].indexOf(colour);
@@ -263,6 +276,11 @@ class Game {
         }
         let tile = $(this.getTileName(args.tile.id));
         await this.animationManager.slideAndAttach(meepleToMove, tile);
+    }
+    async notif_tileAdded(args) {
+        let meepleToMove = $(this.getTileName(args.tile.id)).querySelector('[id*="meeple"]');
+        await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+        await this.handStocks[args.player_id][args.tile.type].addCard(args.tile);
     }
 }
 

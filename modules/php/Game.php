@@ -124,6 +124,7 @@ class Game extends \Bga\GameFramework\Table
 
             $result["players"][$id]["meeples"] = $ans;
 
+            $result["players"][$id]["hand"] = $this->tileManager->getHandofPlayer($id);
         }
 
         $result["revealed"] = [

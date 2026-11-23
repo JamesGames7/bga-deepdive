@@ -23,6 +23,8 @@ export class PlayerTurn {
             this.bga.statusBar.addActionButton(_('Confirm'), () => this.bga.actions.performAction("actDoAction", {
                 tileId: this.game.depthStocks[args.depth].getSelection().concat(
                     this.game.revealedStocks[args.depth].getSelection()
+                ).concat(
+                    [args.prevTile]
                 )[0].id,
                 fromDeck: this.game.depthStocks[args.depth].getSelection().length > 0
             }), {

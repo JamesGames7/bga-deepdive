@@ -9,7 +9,7 @@ export class Game {
     public tileManager: InstanceType<typeof BgaCards.Manager<Tile>>;
     public depthStocks: [InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>, InstanceType<typeof BgaCards.Deck<Tile>>];
     public revealedStocks: [InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>, InstanceType<typeof BgaCards.LineStock<Tile>>];
-    public gridStocks: InstanceType<typeof BgaCards.GridStock<Tile>>[] = [];
+    public handStocks: {[id: number]: {[type: string]: InstanceType<typeof BgaCards.LineStock<Tile>>}} = {};
 
     private playerTurn: PlayerTurn
 
@@ -109,9 +109,9 @@ export class Game {
                         s.unselectAll()
                     });
 
-                    ($('confirm') as any).disabled = false
+                    if (this.bga.players.isCurrentPlayerActive()) ($('confirm') as any).disabled = false
                 } else {
-                    ($('confirm') as any).disabled = true
+                    if (this.bga.players.isCurrentPlayerActive()) ($('confirm') as any).disabled = true
                 }
             }
 
@@ -129,9 +129,9 @@ export class Game {
                             s.unselectAll()
                         }
                     });
-                    ($('confirm') as any).disabled = false
+                    if (this.bga.players.isCurrentPlayerActive()) ($('confirm') as any).disabled = false
                 } else {
-                    ($('confirm') as any).disabled = true
+                    if (this.bga.players.isCurrentPlayerActive()) ($('confirm') as any).disabled = true
                 }
             }
         }
@@ -149,22 +149,31 @@ export class Game {
             
             $('player-tables').insertAdjacentHTML("beforeend", `
                 <div id="playerTable-${playerId}" class="playerTable whiteblock">
-                    <div id="tileGrid-${playerId}"></div>
+                    <div id="tileGreen-${playerId}" class="handStock"></div>
+                    <div id="tileYellow-${playerId}" class="handStock"></div>
+                    <div id="tilePink-${playerId}" class="handStock"></div>
+                    <div id="tileRock-${playerId}" class="handStock"></div>
                     <div id="meepleHand-${playerId}" class="meepleHand"></div>
                 </div>
             `)
 
-            this.gridStocks.push(new BgaCards.GridStock(this.tileManager, $(`tileGrid-${playerId}`), {
-                maxX: 3,
-                minX: 1,
-                minY: 1,
-                maxY: 1,
-                mapCardToCoordinates(tile) {
-                    let row = ["green", "yellow", "pink"].indexOf(tile.type);
-                    
-                    return {x: row, y: 0}
-                },
-            }))
+            this.handStocks[playerId] = {};
+            this.handStocks[playerId]["green"] = new BgaCards.LineStock(this.tileManager, $(`tileGreen-${playerId}`), {
+                direction: "column"
+            });
+            this.handStocks[playerId]["yellow"] = new BgaCards.LineStock(this.tileManager, $(`tileYellow-${playerId}`), {
+                direction: "column"
+            });
+            this.handStocks[playerId]["pink"] = new BgaCards.LineStock(this.tileManager, $(`tilePink-${playerId}`), {
+                direction: "column"
+            });
+            this.handStocks[playerId]["rock"] = new BgaCards.LineStock(this.tileManager, $(`tileRock-${playerId}`), {
+                direction: "column"
+            });
+
+            gamedatas.players[playerId].hand.forEach(tile => {
+                this.handStocks[playerId][tile.type].addCard(tile);
+            })
 
             let meeples = gamedatas.players[playerId].meeples
             let colour = gamedatas.players[playerId].color
@@ -247,6 +256,14 @@ export class Game {
         }
         let tile: HTMLElement = $(this.getTileName(args.tile.id));
         await this.animationManager.slideAndAttach(meepleToMove, tile)
+    }
+
+    async notif_tileAdded(args: {player_id: number, player_name: string, tile: Tile}) {
+        let meepleToMove = $(this.getTileName(args.tile.id)).querySelector('[id*="meeple"]') as HTMLElement;
+
+        await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+
+        await this.handStocks[args.player_id][args.tile.type].addCard(args.tile);
     }
     
     /*

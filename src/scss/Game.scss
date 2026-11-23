@@ -80,3 +80,7 @@
     min-width: 0px;
     flex: 1 1;
 }
+
+.handStock:empty {
+    margin-right: -10px;
+}

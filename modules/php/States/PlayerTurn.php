@@ -54,7 +54,7 @@ class PlayerTurn extends GameState
                 $prevTile = $this->game->tileManager->getTemporaryTileOfPlayer($activePlayerId);
             }
             
-            $this->notify->all("tileFlipped", '${player_name} reveals a tile from the deck', [
+            $this->notify->all("tileFlipped", _('${player_name} reveals a tile from depth ${realDepth}'), [
                 "player_name" => $this->game->getPlayerNameById($activePlayerId),
                 "player_id" => $activePlayerId,
                 "realDepth" => $depth,
@@ -69,6 +69,21 @@ class PlayerTurn extends GameState
                 $this->game->tileManager->setPlayerOn(-1, $prevTile);
             }
 
+            return PlayerTurn::class;
+        } else {
+            $tile = $this->game->tileManager->getTileWithId($tileId);
+
+            $this->game->tileManager->addTileToGrid($tile, $activePlayerId, $depth);
+
+            $this->notify->all("tileAdded", _('${player_name} adds a tile to their grid'), [
+                "player_name" => $this->game->getPlayerNameById($activePlayerId),
+                "player_id" => $activePlayerId,
+                "tile" => $tile
+            ]);
+
+            $this->game->DbQuery("UPDATE `player` SET `depth` = 0 WHERE `player_id` = $activePlayerId");
+
+            $this->game->activeNextPlayer();
             return PlayerTurn::class;
         }
     }

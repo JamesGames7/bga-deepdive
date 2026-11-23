@@ -232,4 +232,21 @@ class TileManager {
     public function getTilesWithPlayer(int $playerId): array {
         return $this->tiles->getItemsByFieldName("playerOn", $playerId)->values();
     }
+
+    public function getTileWithId(int $tileId): Tile {
+        return $this->tiles->getItemById($tileId);
+    }
+
+    public function addTileToGrid(Tile $tile, int $playerId, int $depth): void {
+        if ($tile->type == "bubbles" || $tile->type == "predator") {
+            throw new \Bga\GameFramework\UserException("Undefined error - please reload and/or raise a bug report");
+        } else if ($tile->depth == $depth || ($tile == $this->getTemporaryTileOfPlayer($playerId))) {
+            $this->tiles->moveItem($tile, ["hand", $playerId]);
+            $this->setPlayerOn(-1, $tile);
+        }
+    }
+
+    public function getHandofPlayer(int $playerId): array {
+        return $this->tiles->getItemsInLocation(["hand", $playerId])->values();
+    }
 }
