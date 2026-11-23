@@ -54,8 +54,11 @@
 }
 
 .meeple {
-    width: 120px;
+    position: relative;
+    z-index: 1;
+    width: 90px;
     aspect-ratio: 1;
+    pointer-events: none;
 
     background-image: url('img/meeples.webp');
     background-size: 600% 300%;
@@ -71,4 +74,9 @@
             background-position-x: calc(-100% * $i);
         }
     }
+}
+
+.revealedStock {
+    min-width: 0px;
+    flex: 1 1;
 }

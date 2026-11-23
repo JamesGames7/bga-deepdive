@@ -20,7 +20,4 @@
 
 
 -- Example 2: add a custom field to the standard "player" table
-ALTER TABLE `player` ADD `meeple1` VARCHAR(16) NOT NULL DEFAULT 'hand';
-ALTER TABLE `player` ADD `meeple2` VARCHAR(16) NOT NULL DEFAULT 'hand';
-ALTER TABLE `player` ADD `meeple3` VARCHAR(16) NOT NULL DEFAULT 'hand';
 ALTER TABLE `player` ADD `depth` INT NOT NULL DEFAULT 0;

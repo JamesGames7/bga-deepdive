@@ -62,7 +62,7 @@ export class Game {
 
             setupFrontDiv(card, element) {
                 element.style.backgroundPosition = `-${card.coords.x}00% -${card.coords.y}00%`
-            },
+            }
         })
 
         // Example to add a div on the game area
@@ -78,7 +78,7 @@ export class Game {
             $('depths').insertAdjacentHTML("beforeend", `
                 <div id="depth${i}" class="depth whiteblock">
                     <div id="deck${i}"></div>
-                    <div id="revealed${i}"></div>
+                    <div id="revealed${i}" class="revealedStock"></div>
                 </div>
             `)
 
@@ -116,7 +116,7 @@ export class Game {
             }
 
             tempRevealed.push(new BgaCards.LineStock(this.tileManager, $(`revealed${i}`), {
-                
+                center: false
             }))
 
             tempRevealed[i - 1].onSelectionChange = (selection: Tile[], lastChange: Tile) => {
@@ -138,6 +138,9 @@ export class Game {
 
         this.depthStocks = temp as any
         this.revealedStocks = tempRevealed as any
+        for (let i = 0; i < 5; i++) {
+            this.revealedStocks[i].addCards(gamedatas.revealed[i]);
+        }
         
         // Setting up player boards
         // TODO add name above each & put in right order
@@ -168,13 +171,15 @@ export class Game {
             let colourIndex = ["492b61", "c1ba31", "94341e", "3283ae", "5d913f", "8d1c59"].indexOf(colour)
 
             for (let i = 0; i < 3; i++) {
-                switch (meeples[i]) {
-                    case "hand":
-                        $(`meepleHand-${playerId}`).insertAdjacentHTML(`beforeend`, `
-                            <div id="meeple-${playerId}-${i}" class="meeple playerColour-${colourIndex} meeple-${i}"></div>
-                        `)
-                        break;
-                    // TODO add more
+                if (meeples[i] == null) {
+                    $(`meepleHand-${playerId}`).insertAdjacentHTML(`beforeend`, `
+                        <div id="meeple-${playerId}-${i}" class="meeple playerColour-${colourIndex} meeple-${i}"></div>
+                    `)
+                } else {
+                    let tile: HTMLElement = $(this.getTileName(meeples[i].id));
+                    tile.insertAdjacentHTML(`beforeend`, `
+                        <div id="meeple-${playerId}-${i}" class="meeple playerColour-${colourIndex} meeple-${i}"></div>
+                    `)
                 }
             }
         });
@@ -196,6 +201,10 @@ export class Game {
         script. Typically, functions that are used in multiple state classes or outside a state class.
     
     */
+
+    getTileName(tileId: number): string {
+        return `tile-${tileId}`;
+    }
 
     
     ///////////////////////////////////////////////////
@@ -219,11 +228,26 @@ export class Game {
         });
     }
 
-    async notif_test(args) {
+    async notif_test(args: any) {
         console.log(args)
     }
-    
-    // TODO: from this point and below, you can write your game notifications handling methods
+
+    async notif_tileFlipped(args: {player_id: number, player_name: string, realDepth: number, tile: Tile, prevTile: Tile|null}) {
+        await this.revealedStocks[args.realDepth - 1].addCard(args.tile, {
+            fromStock: this.depthStocks[args.realDepth - 1],
+            initialSide: "front",
+            fadeIn: true
+        });
+        let meepleToMove: HTMLElement;
+        if (args.prevTile != null) {
+            let prevEl = $(this.getTileName(args.prevTile.id));
+            meepleToMove = prevEl.querySelector('[id*="meeple"]');
+        } else {
+            meepleToMove = $(`meepleHand-${args.player_id}`).children[0] as HTMLElement;
+        }
+        let tile: HTMLElement = $(this.getTileName(args.tile.id));
+        await this.animationManager.slideAndAttach(meepleToMove, tile)
+    }
     
     /*
     Example:

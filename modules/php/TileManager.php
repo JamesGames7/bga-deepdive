@@ -201,11 +201,35 @@ class TileManager {
         $this->tiles->createItems($tiles->values());
     }
 
-    public function getFromDepth(int $depth): array {
-        return $this->tiles->getItemsInLocation(['deck', $depth], limit: 1)->values();
-    }
-
     public function getDepthSize(int $depth): int {
         return $this->tiles->countItemsInLocation(["deck", $depth]);
+    }
+
+    public function pickItemFromDeck(int $depth): Tile {
+        return $this->tiles->pickItem(["deck", $depth], ["revealed", $depth]);
+    }
+
+    public function getRevealed(int $depth): array {
+        return $this->tiles->getItemsInLocation(["revealed", $depth])->values();
+    }
+
+    public function setPlayerOn(int $playerId, Tile $tile): void {
+        if ($playerId > 0) {
+            $tile->playerOn = $playerId;
+            $this->tiles->updateItem($tile, "playerOn");
+        } else {
+            $tile->playerOn = null;
+            $this->tiles->updateItem($tile, "playerOn");
+        }
+    }
+
+    public function getTemporaryTileOfPlayer(int $playerId): Tile|null {
+        $options = $this->tiles->getItemsByFieldName("playerOn", $playerId)->filter(fn($val, $key) => $val->type != "predator");
+        if ($options->count() > 0) return $options->first();
+        return null;
+    }
+
+    public function getTilesWithPlayer(int $playerId): array {
+        return $this->tiles->getItemsByFieldName("playerOn", $playerId)->values();
     }
 }

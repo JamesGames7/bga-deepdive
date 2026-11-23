@@ -22,12 +22,15 @@ class PlayerTurn {
      * This method is called each time we are entering the game state. You can use this method to perform some user interface changes at this moment.
      */
     onEnteringState(args, isCurrentPlayerActive) {
-        // this.game.revealedStocks[args.depth].addCard({id: 2, depth: 1, coords: {x: 1, y: 0}, type: "yellow", points: 2})
         if (isCurrentPlayerActive) {
+            if (args.prevTile) {
+                this.game.revealedStocks[args.depth - 1].setSelectionMode("single", [args.prevTile]);
+            }
             this.game.depthStocks[args.depth].setSelectionMode("single");
             this.game.revealedStocks[args.depth].setSelectionMode("single");
             this.bga.statusBar.addActionButton(_('Confirm'), () => this.bga.actions.performAction("actDoAction", {
-                tile: this.game.depthStocks[args.depth].getSelection().concat(this.game.revealedStocks[args.depth].getSelection())[0].id
+                tileId: this.game.depthStocks[args.depth].getSelection().concat(this.game.revealedStocks[args.depth].getSelection())[0].id,
+                fromDeck: this.game.depthStocks[args.depth].getSelection().length > 0
             }), {
                 disabled: this.game.depthStocks[args.depth].getSelection().length == 0
                     || this.game.revealedStocks[args.depth].getSelection().length == 0
@@ -40,6 +43,11 @@ class PlayerTurn {
      * This method is called each time we are leaving the game state. You can use this method to perform some user interface changes at this moment.
      */
     onLeavingState(args, isCurrentPlayerActive) {
+        this.game.depthStocks[args.depth].setSelectionMode("none");
+        this.game.revealedStocks[args.depth].setSelectionMode("none");
+        if (args.depth > 0)
+            this.game.revealedStocks[args.depth - 1].setSelectionMode("none");
+        this.bga.statusBar.removeActionButtons();
     }
 }
 
@@ -83,7 +91,7 @@ class Game {
             isCardVisible: (card) => true,
             setupFrontDiv(card, element) {
                 element.style.backgroundPosition = `-${card.coords.x}00% -${card.coords.y}00%`;
-            },
+            }
         });
         // Example to add a div on the game area
         this.bga.gameArea.getElement().insertAdjacentHTML('beforeend', `
@@ -96,7 +104,7 @@ class Game {
             $('depths').insertAdjacentHTML("beforeend", `
                 <div id="depth${i}" class="depth whiteblock">
                     <div id="deck${i}"></div>
-                    <div id="revealed${i}"></div>
+                    <div id="revealed${i}" class="revealedStock"></div>
                 </div>
             `);
             temp.push(new BgaCards.Deck(this.tileManager, $(`deck${i}`), {
@@ -140,7 +148,9 @@ class Game {
                     $('confirm').disabled = true;
                 }
             };
-            tempRevealed.push(new BgaCards.LineStock(this.tileManager, $(`revealed${i}`), {}));
+            tempRevealed.push(new BgaCards.LineStock(this.tileManager, $(`revealed${i}`), {
+                center: false
+            }));
             tempRevealed[i - 1].onSelectionChange = (selection, lastChange) => {
                 if (selection.length > 0) {
                     this.depthStocks.forEach(s => {
@@ -160,6 +170,9 @@ class Game {
         }
         this.depthStocks = temp;
         this.revealedStocks = tempRevealed;
+        for (let i = 0; i < 5; i++) {
+            this.revealedStocks[i].addCards(gamedatas.revealed[i]);
+        }
         // Setting up player boards
         // TODO add name above each & put in right order
         Object.entries(gamedatas.players).forEach(([pId, player]) => {
@@ -184,13 +197,16 @@ class Game {
             let colour = gamedatas.players[playerId].color;
             let colourIndex = ["492b61", "c1ba31", "94341e", "3283ae", "5d913f", "8d1c59"].indexOf(colour);
             for (let i = 0; i < 3; i++) {
-                switch (meeples[i]) {
-                    case "hand":
-                        $(`meepleHand-${playerId}`).insertAdjacentHTML(`beforeend`, `
-                            <div id="meeple-${playerId}-${i}" class="meeple playerColour-${colourIndex} meeple-${i}"></div>
-                        `);
-                        break;
-                    // TODO add more
+                if (meeples[i] == null) {
+                    $(`meepleHand-${playerId}`).insertAdjacentHTML(`beforeend`, `
+                        <div id="meeple-${playerId}-${i}" class="meeple playerColour-${colourIndex} meeple-${i}"></div>
+                    `);
+                }
+                else {
+                    let tile = $(this.getTileName(meeples[i].id));
+                    tile.insertAdjacentHTML(`beforeend`, `
+                        <div id="meeple-${playerId}-${i}" class="meeple playerColour-${colourIndex} meeple-${i}"></div>
+                    `);
                 }
             }
         });
@@ -207,6 +223,9 @@ class Game {
         script. Typically, functions that are used in multiple state classes or outside a state class.
     
     */
+    getTileName(tileId) {
+        return `tile-${tileId}`;
+    }
     ///////////////////////////////////////////////////
     //// Reaction to cometD notifications
     /*
@@ -227,6 +246,23 @@ class Game {
     }
     async notif_test(args) {
         console.log(args);
+    }
+    async notif_tileFlipped(args) {
+        await this.revealedStocks[args.realDepth - 1].addCard(args.tile, {
+            fromStock: this.depthStocks[args.realDepth - 1],
+            initialSide: "front",
+            fadeIn: true
+        });
+        let meepleToMove;
+        if (args.prevTile != null) {
+            let prevEl = $(this.getTileName(args.prevTile.id));
+            meepleToMove = prevEl.querySelector('[id*="meeple"]');
+        }
+        else {
+            meepleToMove = $(`meepleHand-${args.player_id}`).children[0];
+        }
+        let tile = $(this.getTileName(args.tile.id));
+        await this.animationManager.slideAndAttach(meepleToMove, tile);
     }
 }
 

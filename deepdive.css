@@ -51,8 +51,11 @@
 }
 
 .meeple {
-  width: 120px;
+  position: relative;
+  z-index: 1;
+  width: 90px;
   aspect-ratio: 1;
+  pointer-events: none;
   background-image: url("img/meeples.webp");
   background-size: 600% 300%;
 }
@@ -83,3 +86,10 @@
 .meeple.playerColour-5 {
   background-position-x: -500%;
 }
+
+.revealedStock {
+  min-width: 0px;
+  flex: 1 1;
+}
+
+/*# sourceMappingURL=deepdive.css.map */

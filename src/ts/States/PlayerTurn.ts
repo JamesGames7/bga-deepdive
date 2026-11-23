@@ -13,16 +13,18 @@ export class PlayerTurn {
      * This method is called each time we are entering the game state. You can use this method to perform some user interface changes at this moment.
      */
     onEnteringState(args: PlayerTurnArgs, isCurrentPlayerActive: boolean) {
-        // this.game.revealedStocks[args.depth].addCard({id: 2, depth: 1, coords: {x: 1, y: 0}, type: "yellow", points: 2})
         if (isCurrentPlayerActive) {
+            if (args.prevTile) {
+                this.game.revealedStocks[args.depth - 1].setSelectionMode("single", [args.prevTile]);
+            }
             this.game.depthStocks[args.depth].setSelectionMode("single");
             this.game.revealedStocks[args.depth].setSelectionMode("single");
 
             this.bga.statusBar.addActionButton(_('Confirm'), () => this.bga.actions.performAction("actDoAction", {
-                tile: this.game.depthStocks[args.depth].getSelection().concat(
-                    this.game.revealedStocks[args.depth].getSelection(),
-                    this.game.depthStocks[args.depth].getSelection()
-                )[0].id
+                tileId: this.game.depthStocks[args.depth].getSelection().concat(
+                    this.game.revealedStocks[args.depth].getSelection()
+                )[0].id,
+                fromDeck: this.game.depthStocks[args.depth].getSelection().length > 0
             }), {
                 disabled: this.game.depthStocks[args.depth].getSelection().length == 0
                             || this.game.revealedStocks[args.depth].getSelection().length == 0
@@ -36,6 +38,9 @@ export class PlayerTurn {
      * This method is called each time we are leaving the game state. You can use this method to perform some user interface changes at this moment.
      */
     onLeavingState(args: PlayerTurnArgs, isCurrentPlayerActive: boolean) {
-
+        this.game.depthStocks[args.depth].setSelectionMode("none");
+        this.game.revealedStocks[args.depth].setSelectionMode("none");
+        if (args.depth > 0) this.game.revealedStocks[args.depth - 1].setSelectionMode("none");
+        this.bga.statusBar.removeActionButtons();
     }
 }

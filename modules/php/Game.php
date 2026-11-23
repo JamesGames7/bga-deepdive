@@ -22,7 +22,7 @@ use Bga\Games\DeepDive\States\PlayerTurn;
 
 class Game extends \Bga\GameFramework\Table
 {
-    private TileManager $tileManager;
+    public TileManager $tileManager;
 
     /**
      * Your global variables labels:
@@ -107,11 +107,6 @@ class Game extends \Bga\GameFramework\Table
 
         // TODO: Gather all information about current game situation (visible by player $currentPlayerId).
 
-        // $result["decks"] = [intval($this->tilesDeck->countCardsInLocation('depth1Deck')), 
-        //                     intval($this->tilesDeck->countCardsInLocation('depth2Deck')), 
-        //                     intval($this->tilesDeck->countCardsInLocation('depth3Deck')), 
-        //                     intval($this->tilesDeck->countCardsInLocation('depth4Deck')),
-        //                     intval($this->tilesDeck->countCardsInLocation('depth5Deck'))];
         $result["decks"] = [
             $this->tileManager->getDepthSize(1), 
             $this->tileManager->getDepthSize(2), 
@@ -121,11 +116,23 @@ class Game extends \Bga\GameFramework\Table
         ];
 
         foreach ($this->loadPlayersBasicInfos() as $id => $info) {
-            $result["players"][$id]["meeples"] = [$this->getUniqueValueFromDB("SELECT `meeple1` FROM `player` WHERE `player_id` = $id"),
-                                                $this->getUniqueValueFromDB("SELECT `meeple2` FROM `player` WHERE `player_id` = $id"),
-                                                $this->getUniqueValueFromDB("SELECT `meeple3` FROM `player` WHERE `player_id` = $id")];
+            $ans = $this->tileManager->getTilesWithPlayer($id);
+
+            while (sizeof($ans) < 3) {
+                $ans[] = null;
+            }
+
+            $result["players"][$id]["meeples"] = $ans;
 
         }
+
+        $result["revealed"] = [
+            $this->tileManager->getRevealed(1),
+            $this->tileManager->getRevealed(2),
+            $this->tileManager->getRevealed(3),
+            $this->tileManager->getRevealed(4),
+            $this->tileManager->getRevealed(5)
+        ];
 
         return $result;
     }
@@ -183,6 +190,14 @@ class Game extends \Bga\GameFramework\Table
         $this->activeNextPlayer();
 
         return PlayerTurn::class;
+    }
+
+    public function getDepthBackend(int $player): int {
+        return intval($this->getUniqueValueFromDB("SELECT `depth` FROM `player` WHERE `player_id` = $player"));
+    }
+
+    public function getDepthReal(int $player): int {
+        return $this->getDepthBackend($player) + 1;
     }
 
     /**

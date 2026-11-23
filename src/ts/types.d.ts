@@ -1,10 +1,11 @@
 interface DeepDivePlayer extends Player {
-    meeples: [string, string, string]
+    meeples: [Tile|null, Tile|null, Tile|null]
 }
 
 interface DeepDiveGamedatas extends Gamedatas<DeepDivePlayer> {
     // Add here variables you set up in getAllDatas
     decks: [number, number, number, number, number]
+    revealed: [Tile[], Tile[], Tile[], Tile[], Tile[]]
 }
 
 /*
@@ -12,6 +13,7 @@ interface DeepDiveGamedatas extends Gamedatas<DeepDivePlayer> {
  */
 interface PlayerTurnArgs {
     depth: number;
+    prevTile: Tile|null;
 }
 
 interface Tile {
