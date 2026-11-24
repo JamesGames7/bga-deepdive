@@ -69,22 +69,56 @@ class PlayerTurn extends GameState
                 $this->game->tileManager->setPlayerOn(-1, $prevTile);
             }
 
+            if ($newTile->type == "predator") {
+                if (sizeof($this->game->tileManager->getTilesWithPlayer($activePlayerId)) == 3) {
+                    $total = 0;
+                    foreach($this->game->tileManager->getTilesWithPlayer($activePlayerId) as $tile) {
+                        $total += $this->game->tileManager->countSelectableAtDepth($tile->depth);
+                    }
+
+                    if ($total > 0) {
+                        $this->game->DbQuery("UPDATE `player` SET `depth` = 0 WHERE `player_id` = $activePlayerId");
+
+                        return PredatorTurn::class;
+                    }
+                }
+
+                $this->game->DbQuery("UPDATE `player` SET `depth` = 0 WHERE `player_id` = $activePlayerId");
+                $this->game->activeNextPlayer();
+            } else if ($newTile->depth == 5) {
+                $this->game->tileManager->addTileToGrid($newTile, $activePlayerId, $depth);
+
+                $this->notify->all("tileAdded", _('${player_name} adds a tile to their grid'), [
+                    "player_name" => $this->game->getPlayerNameById($activePlayerId),
+                    "player_id" => $activePlayerId,
+                    "tile" => $newTile
+                ]);
+
+                $this->game->DbQuery("UPDATE `player` SET `depth` = 0 WHERE `player_id` = $activePlayerId");
+
+                $this->game->activeNextPlayer();
+            }
+
             return PlayerTurn::class;
         } else {
             $tile = $this->game->tileManager->getTileWithId($tileId);
 
-            $this->game->tileManager->addTileToGrid($tile, $activePlayerId, $depth);
+            if ($tile->type == "predator" || $tile->type == "bubbles" || $tile->location != "revealed") {
+                throw new \Bga\GameFramework\UserException(_("Not a valid selection"));
+            } else {
+                $this->game->tileManager->addTileToGrid($tile, $activePlayerId, $depth);
 
-            $this->notify->all("tileAdded", _('${player_name} adds a tile to their grid'), [
-                "player_name" => $this->game->getPlayerNameById($activePlayerId),
-                "player_id" => $activePlayerId,
-                "tile" => $tile
-            ]);
+                $this->notify->all("tileAdded", _('${player_name} adds a tile to their grid'), [
+                    "player_name" => $this->game->getPlayerNameById($activePlayerId),
+                    "player_id" => $activePlayerId,
+                    "tile" => $tile
+                ]);
 
-            $this->game->DbQuery("UPDATE `player` SET `depth` = 0 WHERE `player_id` = $activePlayerId");
+                $this->game->DbQuery("UPDATE `player` SET `depth` = 0 WHERE `player_id` = $activePlayerId");
 
-            $this->game->activeNextPlayer();
-            return PlayerTurn::class;
+                $this->game->activeNextPlayer();
+                return PlayerTurn::class;
+            }
         }
     }
 

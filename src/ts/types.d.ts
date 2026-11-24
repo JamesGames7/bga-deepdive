@@ -16,6 +16,9 @@ interface PlayerTurnArgs {
     depth: number;
     prevTile: Tile|null;
 }
+interface PredatorTurnArgs {
+    depths: [number, number, number];
+}
 
 interface Tile {
     depth: number;

@@ -239,7 +239,7 @@ class TileManager {
 
     public function addTileToGrid(Tile $tile, int $playerId, int $depth): void {
         if ($tile->type == "bubbles" || $tile->type == "predator") {
-            throw new \Bga\GameFramework\UserException("Undefined error - please reload and/or raise a bug report");
+            throw new \Bga\GameFramework\UserException(_("Undefined error - please reload and/or raise a bug report"));
         } else if ($tile->depth == $depth || ($tile == $this->getTemporaryTileOfPlayer($playerId))) {
             $this->tiles->moveItem($tile, ["hand", $playerId]);
             $this->setPlayerOn(-1, $tile);
@@ -248,5 +248,9 @@ class TileManager {
 
     public function getHandofPlayer(int $playerId): array {
         return $this->tiles->getItemsInLocation(["hand", $playerId])->values();
+    }
+
+    public function countSelectableAtDepth(int $depth): int {
+        return $this->tiles->getItemsInLocation(["revealed", $depth])->count();
     }
 }

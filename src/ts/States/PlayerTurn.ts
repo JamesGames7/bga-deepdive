@@ -14,11 +14,13 @@ export class PlayerTurn {
      */
     onEnteringState(args: PlayerTurnArgs, isCurrentPlayerActive: boolean) {
         if (isCurrentPlayerActive) {
-            if (args.prevTile) {
+            if (args.prevTile && args.prevTile.type != "bubbles") {
                 this.game.revealedStocks[args.depth - 1].setSelectionMode("single", [args.prevTile]);
             }
             this.game.depthStocks[args.depth].setSelectionMode("single");
-            this.game.revealedStocks[args.depth].setSelectionMode("single");
+
+            let allowed = this.game.revealedStocks[args.depth].getCards().filter(tile => tile.type != "bubbles" && tile.type != "predator");
+            this.game.revealedStocks[args.depth].setSelectionMode("single", allowed);
 
             this.bga.statusBar.addActionButton(_('Confirm'), () => this.bga.actions.performAction("actDoAction", {
                 tileId: this.game.depthStocks[args.depth].getSelection().concat(

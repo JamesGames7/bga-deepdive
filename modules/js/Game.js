@@ -23,11 +23,12 @@ class PlayerTurn {
      */
     onEnteringState(args, isCurrentPlayerActive) {
         if (isCurrentPlayerActive) {
-            if (args.prevTile) {
+            if (args.prevTile && args.prevTile.type != "bubbles") {
                 this.game.revealedStocks[args.depth - 1].setSelectionMode("single", [args.prevTile]);
             }
             this.game.depthStocks[args.depth].setSelectionMode("single");
-            this.game.revealedStocks[args.depth].setSelectionMode("single");
+            let allowed = this.game.revealedStocks[args.depth].getCards().filter(tile => tile.type != "bubbles" && tile.type != "predator");
+            this.game.revealedStocks[args.depth].setSelectionMode("single", allowed);
             this.bga.statusBar.addActionButton(_('Confirm'), () => this.bga.actions.performAction("actDoAction", {
                 tileId: this.game.depthStocks[args.depth].getSelection().concat(this.game.revealedStocks[args.depth].getSelection()).concat([args.prevTile])[0].id,
                 fromDeck: this.game.depthStocks[args.depth].getSelection().length > 0
@@ -51,6 +52,45 @@ class PlayerTurn {
     }
 }
 
+/**
+ * We create one State class per declared state on the PHP side, to handle all state specific code here.
+ * onEnteringState, onLeavingState and onPlayerActivationChange are predefined names that will be called by the framework.
+ * When executing code in this state, you can access the args using this.args
+ */
+class PredatorTurn {
+    constructor(game, bga) {
+        this.game = game;
+        this.bga = bga;
+    }
+    /**
+     * This method is called each time we are entering the game state. You can use this method to perform some user interface changes at this moment.
+     */
+    onEnteringState(args, isCurrentPlayerActive) {
+        if (isCurrentPlayerActive) {
+            args.depths.forEach(depth => {
+                let selectable = this.game.revealedStocks[depth - 1].getCards().filter(tile => tile.type != "bubbles" && tile.type != "predator");
+                this.game.revealedStocks[depth - 1].setSelectionMode("single", selectable);
+            });
+            this.bga.statusBar.addActionButton(_('Confirm'), () => this.bga.actions.performAction("actPickTile", {
+                tileId: this.game.depthStocks[args.depths[0] - 1].getSelection().concat(this.game.revealedStocks[args.depths[1] - 1].getSelection()).concat(this.game.revealedStocks[args.depths[2] - 1].getSelection())[0].id
+            }), {
+                disabled: this.game.depthStocks[args.depths[0] - 1].getSelection().length == 0
+                    || this.game.revealedStocks[args.depths[1] - 1].getSelection().length == 0
+                    || this.game.revealedStocks[args.depths[2] - 1].getSelection().length == 0,
+                id: "confirm"
+            });
+        }
+    }
+    /**
+     * This method is called each time we are leaving the game state. You can use this method to perform some user interface changes at this moment.
+     */
+    onLeavingState(args, isCurrentPlayerActive) {
+        args.depths.forEach(depth => {
+            this.game.revealedStocks[depth - 1].setSelectionMode("none");
+        });
+    }
+}
+
 class Game {
     constructor(bga) {
         this.handStocks = {};
@@ -58,6 +98,8 @@ class Game {
         this.bga = bga;
         this.playerTurn = new PlayerTurn(this, bga);
         this.bga.states.register('PlayerTurn', this.playerTurn);
+        this.predatorTurn = new PredatorTurn(this, bga);
+        this.bga.states.register('PredatorTurn', this.predatorTurn);
         // Uncomment the next line to show debug informations about state changes in the console. Remove before going to production!
         // this.bga.states.logger = console.log;
         // Here, you can init the global variables of your user interface
@@ -279,8 +321,18 @@ class Game {
     }
     async notif_tileAdded(args) {
         let meepleToMove = $(this.getTileName(args.tile.id)).querySelector('[id*="meeple"]');
-        await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+        if (meepleToMove) {
+            await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+        }
         await this.handStocks[args.player_id][args.tile.type].addCard(args.tile);
+    }
+    async notif_clearMeeples(args) {
+        args.tiles.forEach(async (tile) => {
+            let meepleToMove = $(this.getTileName(tile.id)).querySelector('[id*="meeple"]');
+            if (meepleToMove) {
+                await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+            }
+        });
     }
 }
 

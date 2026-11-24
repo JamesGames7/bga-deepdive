@@ -1,5 +1,6 @@
 import { BgaCards, BgaAnimations } from "./libs";
 import { PlayerTurn } from "./States/PlayerTurn";
+import { PredatorTurn } from "./States/PredatorTurn";
 
 export class Game {
     public bga: Bga<DeepDivePlayer, DeepDiveGamedatas>;
@@ -12,6 +13,7 @@ export class Game {
     public handStocks: {[id: number]: {[type: string]: InstanceType<typeof BgaCards.LineStock<Tile>>}} = {};
 
     private playerTurn: PlayerTurn
+    private predatorTurn: PredatorTurn
 
     constructor(bga: Bga<DeepDivePlayer, DeepDiveGamedatas>) {
         console.log('deepdive constructor');
@@ -19,6 +21,8 @@ export class Game {
 
         this.playerTurn = new PlayerTurn(this, bga);
         this.bga.states.register('PlayerTurn', this.playerTurn);
+        this.predatorTurn = new PredatorTurn(this, bga);
+        this.bga.states.register('PredatorTurn', this.predatorTurn);
 
         // Uncomment the next line to show debug informations about state changes in the console. Remove before going to production!
         // this.bga.states.logger = console.log;
@@ -260,10 +264,20 @@ export class Game {
 
     async notif_tileAdded(args: {player_id: number, player_name: string, tile: Tile}) {
         let meepleToMove = $(this.getTileName(args.tile.id)).querySelector('[id*="meeple"]') as HTMLElement;
-
-        await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+        if (meepleToMove) {
+            await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+        }
 
         await this.handStocks[args.player_id][args.tile.type].addCard(args.tile);
+    }
+
+    async notif_clearMeeples(args: {player_id: number, player_name: string, tiles: [Tile, Tile, Tile]}) {
+        args.tiles.forEach(async tile => {
+            let meepleToMove = $(this.getTileName(tile.id)).querySelector('[id*="meeple"]') as HTMLElement;
+            if (meepleToMove) {
+                await this.animationManager.slideAndAttach(meepleToMove, $(`meepleHand-${args.player_id}`));
+            }
+        })
     }
     
     /*
