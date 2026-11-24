@@ -169,16 +169,20 @@ export class Game {
 
             this.handStocks[playerId] = {};
             this.handStocks[playerId]["green"] = new BgaCards.LineStock(this.tileManager, $(`tileGreen-${playerId}`), {
-                direction: "column"
+                direction: "column",
+                center: false
             });
             this.handStocks[playerId]["yellow"] = new BgaCards.LineStock(this.tileManager, $(`tileYellow-${playerId}`), {
-                direction: "column"
+                direction: "column",
+                center: false
             });
             this.handStocks[playerId]["pink"] = new BgaCards.LineStock(this.tileManager, $(`tilePink-${playerId}`), {
-                direction: "column"
+                direction: "column",
+                center: false
             });
             this.handStocks[playerId]["rock"] = new BgaCards.LineStock(this.tileManager, $(`tileRock-${playerId}`), {
-                direction: "column"
+                direction: "column",
+                center: false
             });
 
             gamedatas.players[playerId].hand.forEach(tile => {

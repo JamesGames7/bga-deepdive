@@ -40,6 +40,10 @@
   gap: 10px;
 }
 
+.playerTable {
+  padding-top: 5px;
+}
+
 .tile-front, .tile-back {
   background-image: url("img/tiles.webp");
   background-size: 1000% 1000%;
@@ -95,3 +99,5 @@
 .handStock:empty {
   margin-right: -10px;
 }
+
+/*# sourceMappingURL=deepdive.css.map */
