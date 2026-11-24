@@ -147,17 +147,23 @@ export class Game {
         }
         
         // Setting up player boards
+        let order: number[] = gamedatas.playerorder as number[];
+        while (order[0] != this.bga.players.getCurrentPlayerId()) {
+            order.push(order.shift());
+        }
+
         // TODO add name above each & put in right order
-        Object.entries(gamedatas.players).forEach(([pId, player]) => {
-            const playerId = Number(pId);
-            
-            $('player-tables').insertAdjacentHTML("beforeend", `
-                <div id="playerTable-${playerId}" class="playerTable whiteblock">
-                    <div id="tileGreen-${playerId}" class="handStock"></div>
-                    <div id="tileYellow-${playerId}" class="handStock"></div>
-                    <div id="tilePink-${playerId}" class="handStock"></div>
-                    <div id="tileRock-${playerId}" class="handStock"></div>
-                    <div id="meepleHand-${playerId}" class="meepleHand"></div>
+        order.forEach(playerId => {
+            $('player-tables').insertAdjacentHTML("beforeend", /* html */`
+                <div id="playerContainer-${playerId}" class="playerContainer whiteblock">
+                    ${this.bga.players.getFormattedPlayerName(playerId)}
+                    <div id="playerTable-${playerId}" class="playerTable">
+                        <div id="tileGreen-${playerId}" class="handStock"></div>
+                        <div id="tileYellow-${playerId}" class="handStock"></div>
+                        <div id="tilePink-${playerId}" class="handStock"></div>
+                        <div id="tileRock-${playerId}" class="handStock"></div>
+                        <div id="meepleHand-${playerId}" class="meepleHand"></div>
+                    </div>
                 </div>
             `)
 
